@@ -1,20 +1,36 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  width: 500px;
+  margin: 0px auto;
+`;
+
+export const LabelStyle = styled.label`
+  width: 400px;
+  justify-content: space-between;
   align-items: center;
-  font-size: 40px;
-  padding: 40px;
+  display: flex;
+  padding: 4px 5px;
 `;
 
-export const MainHeader = styled.h1`
-  font-size: 42px;
-  text-transform: uppercase;
+export const InputStyle = styled.input`
+  height: 25px;
+  padding: 4px;
+  width: 200px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px grey;
 `;
 
-export const SubHeader = styled.h2`
-  font-size: 36px;
-  text-transform: uppercase;
+export const ButtonStyle = styled.button`
+  height: 30px;
+  width: 100px;
+  padding: 4px;
+  font-weight: 500px;
+  border-radius: 5px;
+  background-color: Goldenrod;
+  box-shadow: 5px 5px 5px grey;
+  &:hover {
+    background-color: SandyBrown;
+    color: white;
+  }
 `;

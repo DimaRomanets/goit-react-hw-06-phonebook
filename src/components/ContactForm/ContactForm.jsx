@@ -1,86 +1,88 @@
+import { nanoid } from 'nanoid';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { nanoid } from 'nanoid';
-import Notiflix from 'notiflix';
-
-import { notifySettings, addContact } from '../../redux/contactsSlice';
-import { Form, Label } from './ContactForm.styled';
-import { Btn } from '../Btn/Btn';
-import { InputItem } from './InputItem';
+import { addContact, getPhoneBookValue } from 'redux/phoneBookSlice';
+import { FormStyle } from './ContactForm.styled';
+import { ButtonStyle, InputStyle, LabelStyle } from 'components/App.styled';
 
 export const ContactForm = () => {
-  const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts);
-
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
+  const phoneBook = useSelector(getPhoneBookValue);
 
-  const onInputChange = event => {
-    switch (event.target.name) {
+  const onSubmitAddContact = event => {
+    event.preventDefault();
+    const data = { name, number };
+    const newObj = { ...data, id: nanoid() };
+
+    if (isNameNew(phoneBook, newObj) !== undefined) {
+      Notify.warning(`${newObj.name} is already in contacts`, {
+        width: '400px',
+        position: 'center-center',
+        timeout: 3000,
+        fontSize: '20px',
+      });
+      return;
+    }
+
+    dispatch(addContact(newObj));
+
+    reset();
+  };
+
+  const isNameNew = (phoneBook, newObj) => {
+    return phoneBook.find(
+      ({ name }) => name.toLowerCase() === newObj.name.toLowerCase()
+    );
+  };
+
+  const onChangeInput = event => {
+    const { name, value } = event.currentTarget;
+    switch (name) {
       case 'name':
-        setName(event.target.value);
+        setName(value);
         break;
       case 'number':
-        setNumber(event.target.value);
+        setNumber(value);
         break;
+
       default:
-        return;
+        break;
     }
   };
 
-  const handleSubmit = event => {
-    event.preventDefault();
-
-    const includesName = contacts.find(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (includesName) {
-      return Notiflix.Notify.warning(
-        `${name} is already in contacts`,
-        notifySettings
-      );
-    }
-
-    const id = nanoid();
-    const contact = { id, name, number };
-
-    dispatch(addContact(contact));
-
-    resetForm();
-  };
-
-  const resetForm = () => {
+  const reset = () => {
     setName('');
     setNumber('');
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Label>
-        Ім'я
-        <InputItem
-          onChange={onInputChange}
-          value={name}
+    <FormStyle onSubmit={onSubmitAddContact}>
+      <LabelStyle>
+        Name
+        <InputStyle
+          type="text"
           name="name"
-          placeholder="Введіть ім'я контакту"
-          pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+          value={name}
+          pattern="^[a-zA-Zа-яА-Я]+(([' \-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+          required
+          onChange={onChangeInput}
         />
-      </Label>
-      <Label>
-        Номер
-        <InputItem
-          onChange={onInputChange}
-          value={number}
+      </LabelStyle>
+      <LabelStyle>
+        Phone number
+        <InputStyle
           type="tel"
           name="number"
-          placeholder="Введіть номер контакту"
-          pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-          title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+          value={number}
+          pattern="\+?\d{1,4}?[ .\-\s]?\(?\d{1,3}?\)?[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,9}"
+          required
+          onChange={onChangeInput}
         />
-      </Label>
-      <Btn type="submit" status="add" text="Add contact" />
-    </Form>
+      </LabelStyle>
+      <ButtonStyle type="submit">Add contact</ButtonStyle>
+    </FormStyle>
   );
 };

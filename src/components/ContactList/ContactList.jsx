@@ -1,45 +1,36 @@
-import { removeContact, notifySettings } from '../../redux/contactsSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import Notiflix from 'notiflix';
+import { getFilter } from 'redux/filterSlice';
+import { delContact, getPhoneBookValue } from 'redux/phoneBookSlice';
+import { ContactItemStyle, ContactListStyle } from './ContactsList.styled';
+import { ButtonStyle } from 'components/App.styled';
 
-import { List } from './ContactList.styled';
-import { ContactItem } from './CotactItem';
-
-export const ContactList = () => {
+export const ContactsList = () => {
   const dispatch = useDispatch();
 
-  const contacts = useSelector(state => state.contacts);
-  const filter = useSelector(state => state.filter);
+  const phoneBook = useSelector(getPhoneBookValue);
+  const filterPhoneBook = useSelector(getFilter);
 
-  const filterContacts = () => {
-    const query = filter.toLocaleLowerCase();
+  const lowerFilter = filterPhoneBook.toLowerCase();
+  const visibleContacts = phoneBook.filter(({ name }) =>
+    name.toLowerCase().includes(lowerFilter)
+  );
 
-    const filteredContacts = contacts.filter(contact =>
-      contact.name.toLocaleLowerCase().includes(query)
-    );
-
-    if (query && !filteredContacts.length) {
-      Notiflix.Notify.warning(
-        'No contacts matching your request',
-        notifySettings
-      );
-    }
-    return filteredContacts;
+  const deleteContact = contactId => {
+    dispatch(delContact(contactId));
   };
 
   return (
-    <List>
-      {filterContacts().map(contact => {
-        return (
-          <ContactItem
-            id={contact.id}
-            key={contact.id}
-            name={contact.name}
-            number={contact.number}
-            onDeleteBtnClick={() => dispatch(removeContact(contact))}
-          />
-        );
-      })}
-    </List>
+    <ContactListStyle>
+      {visibleContacts.map(({ name, number, id }) => (
+        <ContactItemStyle key={id}>
+          <p>
+            {name}: {number}
+          </p>
+          <ButtonStyle type="botton" onClick={() => deleteContact(id)}>
+            Delete
+          </ButtonStyle>
+        </ContactItemStyle>
+      ))}
+    </ContactListStyle>
   );
 };
